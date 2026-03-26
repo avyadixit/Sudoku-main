@@ -14,26 +14,40 @@ def Predict(Image_List):
         gray = cv2.cvtColor(Image, cv2.COLOR_BGR2GRAY)
         blur = cv2.medianBlur(gray, 5)
 
-        thresh = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 27, 6)
-        thresh = cv2.bitwise_not(thresh, mask = None)  
+        thresh = cv2.adaptiveThreshold(
+            blur, 255,
+            cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+            cv2.THRESH_BINARY,
+            27, 6
+        )
+        thresh = cv2.bitwise_not(thresh, mask=None)
 
+        
         contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-        contours.sort(key = cv2.contourArea, reverse = True)
+        contours = list(contours)
+
+        
+        contours = sorted(contours, key=cv2.contourArea, reverse=True)
 
         if len(contours):
             x, y, w, h = cv2.boundingRect(contours[0])
 
+           
             if w >= 6 and h >= 12:
                 size = max(w, h)
                 square_fit = np.zeros((size, size), np.uint8)
 
-                square_fit[int((size - h) / 2):int((size + h) / 2), int((size - w) / 2):int((size + w) / 2)] = thresh[y:y + h, x:x + w]
-                square_fit = cv2.resize(square_fit, (20, 20), interpolation = cv2.INTER_AREA)
+                square_fit[
+                    int((size - h) / 2):int((size + h) / 2),
+                    int((size - w) / 2):int((size + w) / 2)
+                ] = thresh[y:y + h, x:x + w]
 
-                x = square_fit.reshape(-1, 20, 20, 1) / 255.0
-                y = model.predict(x)[0]
-                
-                digit = np.argmax(y)
+                square_fit = cv2.resize(square_fit, (20, 20), interpolation=cv2.INTER_AREA)
+
+                x_input = square_fit.reshape(-1, 20, 20, 1) / 255.0
+                y_pred = model.predict(x_input, verbose=0)[0]
+
+                digit = np.argmax(y_pred)
                 Grid[int(index / 9)][index % 9] = digit
 
     return Grid
