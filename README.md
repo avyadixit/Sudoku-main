@@ -22,7 +22,7 @@ This project is an AI-based system that detects and solves Sudoku puzzles from i
 3. Run:
    python Main.py
 
-## 📸Output
+## Output
 - Input image → Recognized grid → Solved output
 
 ## Author
